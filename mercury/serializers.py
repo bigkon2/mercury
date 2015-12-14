@@ -50,16 +50,38 @@ class CertificationSerializer(serializers.ModelSerializer):
 class LocationSerializer(serializers.ModelSerializer):
 
     symbol = serializers.SerializerMethodField()
-    Ports = serializers.SerializerMethodField()
+    Ports = serializers.PrimaryKeyRelatedField(
+        many=True, source='port_set', read_only=True)
 
     def get_symbol(self, obj):
         if obj:
             return obj.name[:3].upper()
         return None
 
-    def get_Ports(self, obj):
-        return obj.port_set.all().values_list('pk', flat=True)
-
     class Meta:
         model = models.Location
         fields = ('symbol', 'id', 'name', 'Ports')
+
+
+class CorporateAccountSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        user = obj.user
+        full_name = ''
+        if user.firstname:
+            full_name += '%s ' % user.firstname
+        if user.lastname:
+            full_name += user.lastname
+        return full_name or user.username
+
+    class Meta:
+        model = models.Corporateaccount
+        fields = ('id', 'name')
+
+
+class AgentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = models.Agent
+        fields = ('id', 'name')

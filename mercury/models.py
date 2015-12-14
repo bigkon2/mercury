@@ -129,18 +129,13 @@ class Agentdocument(models.Model):
 
 class Agentlogo(models.Model):
     agent = models.OneToOneField(Agent)
-    logo = models.CharField(max_length=100)
+    logo = models.ImageField(upload_to='agent_logos')
 
-#
-#
-# class Agentrating(models.Model):
-#     user_rating = models.IntegerField(blank=True, null=True)
-#     agent_id = models.IntegerField(blank=True, null=True)
-#     user_id = models.IntegerField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'mercury_agentrating'
+
+class Agentrating(models.Model):
+    user_rating = models.IntegerField(blank=True, null=True)
+    agent = models.ForeignKey(Agent)
+    user = models.ForeignKey(User)
 
 
 class Airfreighttariff(models.Model):
@@ -169,6 +164,7 @@ class Airfreighttariff(models.Model):
 class Clientuser(models.Model):
     user = models.OneToOneField(User)
     client = models.ForeignKey(User, related_name='sub_users')
+    countries = models.ManyToManyField('Country')
     preferred_agents = models.ManyToManyField(Agent)
 
 
@@ -221,7 +217,7 @@ class ClientuserPreferredAgents(models.Model):
 #
 #
 class Corporateaccount(models.Model):
-    account = models.OneToOneField(User, related_name='named_user')
+    account = models.ForeignKey(User, related_name='named_user')
     account_users = models.ManyToManyField(User, through='CorporateaccountClient', related_name='account_users')
 
 
@@ -255,34 +251,30 @@ class Currency(models.Model):
 #         unique_together = (('currency_id', 'timestamp'),)
 #
 #
-# class Discount(models.Model):
-#     agent_id = models.IntegerField()
-#     user_id = models.IntegerField()
-#     multiplier = models.FloatField()
-#     flc_l_o = models.FloatField(blank=True, null=True)
-#     flc_c_o = models.FloatField(blank=True, null=True)
-#     lcl_o = models.FloatField(blank=True, null=True)
-#     air_o = models.FloatField(blank=True, null=True)
-#     perm_o = models.FloatField(blank=True, null=True)
-#     flc_l_d = models.FloatField(blank=True, null=True)
-#     flc_c_d = models.FloatField(blank=True, null=True)
-#     lcl_d = models.FloatField(blank=True, null=True)
-#     air_d = models.FloatField(blank=True, null=True)
-#     perm_d = models.FloatField(blank=True, null=True)
-#     freight_increase = models.IntegerField(blank=True, null=True)
-#     fcl_f = models.FloatField(blank=True, null=True)
-#     lcl_f = models.FloatField(blank=True, null=True)
-#     air_f = models.FloatField(blank=True, null=True)
-#     road_f = models.FloatField(blank=True, null=True)
-#     multiplier_backup = models.FloatField(blank=True, null=True)
-#     road_o = models.FloatField(blank=True, null=True)
-#     road_d = models.FloatField(blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'mercury_discount'
-#
-#
+class Discount(models.Model):
+    agent = models.ForeignKey(Agent)
+    user = models.ForeignKey(User)
+    multiplier = models.FloatField()
+    flc_l_o = models.FloatField(blank=True, null=True)
+    flc_c_o = models.FloatField(blank=True, null=True)
+    lcl_o = models.FloatField(blank=True, null=True)
+    air_o = models.FloatField(blank=True, null=True)
+    perm_o = models.FloatField(blank=True, null=True)
+    flc_l_d = models.FloatField(blank=True, null=True)
+    flc_c_d = models.FloatField(blank=True, null=True)
+    lcl_d = models.FloatField(blank=True, null=True)
+    air_d = models.FloatField(blank=True, null=True)
+    perm_d = models.FloatField(blank=True, null=True)
+    freight_increase = models.BooleanField()
+    fcl_f = models.FloatField(blank=True, null=True)
+    lcl_f = models.FloatField(blank=True, null=True)
+    air_f = models.FloatField(blank=True, null=True)
+    road_f = models.FloatField(blank=True, null=True)
+    multiplier_backup = models.FloatField(blank=True, null=True)
+    road_o = models.FloatField(blank=True, null=True)
+    road_d = models.FloatField(blank=True, null=True)
+
+
 # class Discounts(models.Model):
 #     agent_id = models.IntegerField()
 #     user_id = models.IntegerField()
@@ -385,23 +377,19 @@ class Lane(models.Model):
     archived = models.BooleanField()
 
 
-# class Lclfreighttariff(models.Model):
-#     currency_id = models.IntegerField()
-#     create_time = models.DateTimeField()
-#     archived = models.IntegerField()
-#     archive_time = models.DateTimeField(blank=True, null=True)
-#     lane = models.ForeignKey(Lane)
-#     expiry = models.DateField(blank=True, null=True)
-#     comment = models.CharField(max_length=5000, blank=True, null=True)
-#     dthc = models.IntegerField()
-#     transit = models.CharField(max_length=7, blank=True, null=True)
-#     addon = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-#
-#     class Meta:
-#         managed = False
-#         db_table = 'mercury_lclfreighttariff'
-#
-#
+class Lclfreighttariff(models.Model):
+    currency = models.ForeignKey('Currency')
+    create_time = models.DateTimeField()
+    archived = models.BooleanField()
+    archive_time = models.DateTimeField(blank=True, null=True)
+    lane = models.ForeignKey(Lane)
+    expiry = models.DateField(blank=True, null=True)
+    comment = models.CharField(max_length=5000, blank=True, null=True)
+    dthc = models.BooleanField()
+    transit = models.CharField(max_length=7, blank=True, null=True)
+    addon = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+
+
 # class Lcltariffpricepoint(models.Model):
 #     tariff = models.ForeignKey(Lclfreighttariff)
 #     min_units = models.FloatField()
@@ -413,6 +401,7 @@ class Lane(models.Model):
 #
 class Location(models.Model):
     name = models.CharField(max_length=200)
+    markets = models.ManyToManyField('Market')
 #
 #
 # class LocationMarkets(models.Model):
@@ -639,6 +628,7 @@ class Market(models.Model):
 class Port(models.Model):
     name = models.CharField(max_length=200)
     locations = models.ManyToManyField(Location)
+    markets = models.ManyToManyField(Market)
 
 
 # class PortMarkets(models.Model):
@@ -895,7 +885,7 @@ class Roadfreighttariff(models.Model):
 class Tariff(models.Model):
     type = models.CharField(max_length=20)
     agent = models.ForeignKey(Agent)
-    market_id = models.IntegerField()
+    market = models.ForeignKey(Market)
     create_time = models.DateTimeField()
     archived = models.BooleanField()
     archive_time = models.DateTimeField(blank=True, null=True)

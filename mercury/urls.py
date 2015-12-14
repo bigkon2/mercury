@@ -8,5 +8,7 @@ urlpatterns = [
     url(r'^associations$', views.AssociationView.as_view()),
     url(r'^certifications$', views.CertificationView.as_view()),
     url(r'^locations$', views.LocationView.as_view()),
+    url(r'^accounts/user/$', views.AccountDetailsView.as_view()),
+    url(r'^details/agents/$', views.AgentDetailsView.as_view()),
     url(r'^$', views.IndexView.as_view()),
 ]
