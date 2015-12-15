@@ -100,7 +100,7 @@ class AgentDetailsView(views.APIView):
                 destination_port__in=dest_ports
             )
             for lane in lanes:
-                if tariff_model.objects.filter(lane=lane):
+                if tariff_model.objects.filter(lane=lane).exists():
                     agent_ids.add(lane.agent_id)
         discounts = models.Discount.objects.filter(
             agent_id__in=agent_ids, user=request.user)
