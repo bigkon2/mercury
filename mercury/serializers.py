@@ -1,6 +1,7 @@
+from time import mktime
+from django.db.models import Avg, Count
 from rest_framework import serializers
 import models
-from time import mktime
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -81,7 +82,58 @@ class CorporateAccountSerializer(serializers.ModelSerializer):
 
 
 class AgentSerializer(serializers.ModelSerializer):
+    logo = serializers.StringRelatedField(source='agentlogo.logo')
+    certifications = CertificationSerializer(many=True, read_only=True)
+    associations = AssociationSerializer(many=True, read_only=True)
+    ratings = serializers.SerializerMethodField()
+
+    def get_ratings(self, obj):
+        user = self.context['request'].user
+        query = obj.agentrating_set.filter(agent=obj)
+        data = query.exclude(user=user).aggregate(
+            Avg('user_rating'), Count('id'))
+        try:
+            user_rating = query.get(user=user).user_rating
+        except models.Agentrating.DoesNotExist:
+            user_rating = 0
+        return dict(
+            average=data['user_rating__avg'] or 0,
+            users=data['id__count'],
+            user_rating=user_rating
+        )
 
     class Meta:
         model = models.Agent
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'logo', 'certifications',
+                  'associations', 'ratings')
+
+
+class SimpleAgentSerializer(serializers.ModelSerializer):
+    contact = serializers.CharField(source='manager_contact')
+    email = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
+
+    def get_email(self, obj):
+        return obj.email or obj.manager_email
+
+    def get_phone(self, obj):
+        return obj.phone or obj.manager_phone
+
+    class Meta:
+        model = models.Agent
+        fields = ('id', 'contact', 'email', 'name', 'phone')
+
+
+class PriceByLaneSerializer(serializers.ModelSerializer):
+    Ports = ''
+    agent_details = SimpleAgentSerializer()
+    chargeable_volume = ''
+    chargeable_weight = ''
+    converted_rate = ''
+    currency_id = ''
+    marketId = ''
+    maximumVolume = ''
+    minimumVolume = ''
+    rate = ''
+    tariffId = ''
+    thc = ''

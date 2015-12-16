@@ -370,9 +370,8 @@ class Freighttariffsettings(models.Model):
 
 class Lane(models.Model):
     agent = models.ForeignKey(Agent)
-    origin_port = models.ForeignKey('Port')
-    destination_port = models.ForeignKey('Port', related_name='distination_lanes')
-    # destination_port = models.ForeignKey('Port')
+    origin_port = models.ForeignKey('Port', related_name='origin_freight_port')
+    destination_port = models.ForeignKey('Port', related_name='destination_freight_port')
     row = models.IntegerField()
     archived = models.BooleanField()
 
